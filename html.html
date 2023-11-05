@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            axios.get(`https://eventsapi.onrender.com/api/Events`).then(res => {
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    events: res.data,
+                });
+                calendar.render();
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <script>
+
+        function addEvent() {
+            let title = document.querySelector("#title").value;
+            let start = document.querySelector("#start").value;
+            axios.post("https://localhost:7292/api/Events", {
+                "title": title,
+                "start": start
+            }).then(res => {
+                location.reload()
+            })
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelector("#list").addEventListener("click", function (event) {
+                let li = event.target;
+                const parts = li.textContent.split(',');
+                let index = parts[0].indexOf(':');
+                let id = parts[0].substring(index + 1);
+                document.querySelector("#delete").addEventListener("click", function () {
+            axios.delete(`https://localhost:7292/api/Events/${id}`).then(res => {
+                location.reload()
+            })
+        })})})
+        axios.get("https://localhost:7292/api/Events").then(res => {
+            for (const iterator of res.data) {
+                document.querySelector("#list").innerHTML += `<li>id:${iterator.id}, title:${iterator.title}, start:${iterator.start}, end:${iterator.end}</li>`
+                document.querySelector("#list1").innerHTML += `<li>id:${iterator.id}, title:${iterator.title}, start:${iterator.start}, end:${iterator.end}</li>`
+            }
+        })
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelector("#list1").addEventListener("click", function (event) {
+                let li = event.target;
+                const parts = li.textContent.split(',');
+                let index3 = parts[0].indexOf(':');
+                let index = parts[1].indexOf(':');
+                let index1 = parts[2].indexOf(':');
+                document.querySelector("#title1").value = parts[1].substring(index + 1);
+                document.querySelector("#start1").value = parts[2].substring(index1 + 1);
+                let id = parts[0].substring(index3 + 1);
+                document.querySelector("#update").addEventListener("click", function () {
+                    let title = document.querySelector("#title1").value;
+                    let start = document.querySelector("#start1").value;
+                    axios.put(`https://localhost:7292/api/Events/${id}`, {
+                        "title": title,
+                        "start": start
+                    }).then(res => {
+                        location.reload()
+                    })
+                }
+                )
+            });
+        })
+    </script>
+    <div id='calendar'></div>
+    <div>Add Event</div>
+    <input type="text" name="title" id="title" placeholder="title">
+    <input type="text" name="start" id="start" placeholder="start">
+    <button onclick="addEvent()">Add Event</button>
+    <div>Delete Event</div>
+    <button id="delete">Delete Event</button>
+    <ul id="list"></ul>
+    <div>Update Event</div>
+    <input type="text" name="title1" id="title1" placeholder="title">
+    <input type="text" name="start1" id="start1" placeholder="start">
+    <button id="update">Update Event</button>
+    <ul id="list1">
+    </ul>
+</body>
+
+</html>
